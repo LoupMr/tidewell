@@ -15,7 +15,7 @@ export default async function RegisterPage() {
       <h1 className="font-display mb-1 text-2xl font-semibold">Create your account</h1>
       <p className="mb-5 text-sm text-muted">
         {firstUser
-          ? "You're the first one here — this account becomes the instance admin."
+          ? "You're the first one here. Every account is private: nobody else can see your data."
           : mode === "invite"
             ? "This instance is invite-only."
             : "Your data stays on this server. Connected accounts are read-only."}

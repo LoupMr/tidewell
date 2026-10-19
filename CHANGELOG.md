@@ -3,6 +3,12 @@
 All notable changes are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and the project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Removed
+- The admin role. Every account is independent and only ever sees its own data; who can sign up is
+  controlled by the server owner through `REGISTRATION_MODE` in the env file.
+
 ## [0.1.0] — 2026-10-19
 
 ### Added

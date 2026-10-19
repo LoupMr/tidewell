@@ -68,7 +68,6 @@ export async function registerAction(_prev: ActionState, formData: FormData): Pr
       email,
       passwordHash: await bcrypt.hash(password, 12),
       timezone,
-      role: userCount === 0 ? "ADMIN" : "USER", // first account owns the instance
     },
   });
   await seedDefaultCategories(user.id);

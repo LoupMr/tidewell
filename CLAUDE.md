@@ -21,7 +21,9 @@ tracking. Next.js 15 App Router · TypeScript strict · Tailwind 4 · Prisma 6 +
 5. Money is integer **cents**, always positive; `type` carries the sign. Dates are `@db.Date` (UTC midnight)
    → format with `formatDateOnly`.
 6. Never edit an applied migration — add a new one.
-7. Design tokens only (`bg-surface`, `text-muted`, `text-accent`…). Teal = live/actionable, amber = attention.
+7. **No admin role.** Every account is independent and only ever sees its own data. Instance-wide settings
+   (who can sign up, OAuth keys) live in env, controlled by whoever runs the server.
+8. Design tokens only (`bg-surface`, `text-muted`, `text-accent`…). Teal = live/actionable, amber = attention.
    Numbers use the `num` utility. See docs/DESIGN.md.
 
 ## Map

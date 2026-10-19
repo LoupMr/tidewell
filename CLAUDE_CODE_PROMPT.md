@@ -19,8 +19,9 @@ Do the **Phase 3 hardening** items from `docs/ROADMAP.md`, one PR-sized commit e
    dev). New `VerificationToken` / `PasswordResetToken` tables (hashed tokens, 1 h expiry), `/verify`,
    `/forgot-password`, `/reset-password`. Unverified users can sign in but see a banner. Keep it optional:
    if SMTP isn't configured, skip verification.
-3. **Admin page** at `/admin` (role ADMIN only): user list with created date, connection counts and last sync
-   status; disable/enable a user (`disabledAt`, blocks login); instance sync health (failures in the last 24 h).
+3. **Sync health in Settings**: for the signed-in user only, show sync failures from the last 24 h per
+   connection with the provider's error message and a one-click reconnect. There is no admin role: every
+   account is independent and never sees other users' data.
 4. **"Needs a reply"** card on the dashboard: upcoming events where `responseStatus` is `needsAction` /
    `notResponded`, linking to the event.
 

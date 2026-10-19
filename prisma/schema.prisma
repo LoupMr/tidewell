@@ -16,7 +16,9 @@ datasource db {
 }
 
 // ---------------------------------------------------------------------------
-// Accounts
+// Accounts — every account is independent: no admin role, nobody can see
+// another user's data. Who may sign up is set by the server owner in env
+// (REGISTRATION_MODE), not by any account.
 // ---------------------------------------------------------------------------
 
 model User {
@@ -24,7 +26,6 @@ model User {
   email        String   @unique
   name         String
   passwordHash String
-  role         Role     @default(USER)
   timezone     String   @default("Europe/Paris")
   locale       String   @default("en-GB")
   currency     String   @default("EUR")
@@ -40,11 +41,6 @@ model User {
   categories      Category[]
   transactions    Transaction[]
   recurrings      Recurring[]
-}
-
-enum Role {
-  USER
-  ADMIN
 }
 
 // ---------------------------------------------------------------------------
