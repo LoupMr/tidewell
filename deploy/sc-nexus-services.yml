@@ -1,0 +1,42 @@
+# Paste these into SC-Nexus/docker-compose.yml (under `services:` and `volumes:`).
+# Already applied to your local SC-Nexus/docker-compose.yml by the setup.
+
+services:
+  # --- Tidewell (tidewell.lothmar.com) : Postgres + Next.js app ------------
+  tidewell-db:
+    container_name: tidewell-db
+    image: postgres:16-alpine
+    restart: unless-stopped
+    env_file:
+      - ./tidewell.env
+    volumes:
+      - tidewell-db-data:/var/lib/postgresql/data
+    networks:
+      - shared
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  tidewell:
+    container_name: tidewell
+    build:
+      context: ../Tidewell # sibling repo, cloned next to SC-Nexus on the NAS
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      tidewell-db:
+        condition: service_healthy
+    env_file:
+      - ./tidewell.env
+    environment:
+      NODE_ENV: production
+    # Tunnel reaches it as http://tidewell:3000. LAN access: http://<nas-ip>:3003
+    ports:
+      - "3003:3000"
+    networks:
+      - shared
+
+volumes:
+  tidewell-db-data:

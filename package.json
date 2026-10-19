@@ -1,0 +1,46 @@
+{
+  "name": "tidewell",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Self-hosted personal dashboard: every calendar, inbox, GitHub queue and your money in one calm page.",
+  "license": "MIT",
+  "author": "LoupMr",
+  "scripts": {
+    "dev": "next dev -p 3020",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "prisma:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:reset": "prisma migrate reset --force",
+    "sync": "tsx scripts/sync-once.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.3",
+    "bcryptjs": "^2.4.3",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.540.0",
+    "next": "^15.5.28",
+    "next-auth": "5.0.0-beta.31",
+    "papaparse": "^5.5.3",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.0",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^22.10.5",
+    "@types/papaparse": "^5.3.15",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "eslint": "^9.18.0",
+    "eslint-config-next": "^15.5.0",
+    "prisma": "^6.19.3",
+    "tailwindcss": "^4.1.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}

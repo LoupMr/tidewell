@@ -1,0 +1,37 @@
+# Standalone stack (local testing, or anyone self-hosting Tidewell on their own).
+# On the LoupMr NAS, Tidewell is instead wired into SC-Nexus's docker-compose.yml
+# — see docs/DEPLOY_NAS.md.
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-tidewell}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-tidewell}
+    ports:
+      # host 5434 -> container 5432 (5432/5433 are often taken)
+      - "5434:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-tidewell}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-tidewell}?schema=public
+    ports:
+      - "3003:3000"
+
+volumes:
+  db_data:

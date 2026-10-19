@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+/* Tidewell design tokens — calm, low-saturation. Teal means "live / actionable",
+   amber means "attention / placeholder". Neither is used for decoration. */
+:root {
+  --bg: #f6f5f1;
+  --surface: #ffffff;
+  --surface-2: #efeee8;
+  --border: #e2e0d8;
+  --text: #1d2430;
+  --muted: #6b7280;
+  --accent: #0f766e;
+  --accent-soft: #e3f1ef;
+  --accent-text: #ffffff;
+  --warn: #b45309;
+  --warn-soft: #fdf3e2;
+  --danger: #b42318;
+  --danger-soft: #fdecea;
+  --ok: #15803d;
+  --ok-soft: #e7f5ec;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #11161d;
+    --surface: #18202a;
+    --surface-2: #1f2934;
+    --border: #2a3542;
+    --text: #e6e9ee;
+    --muted: #93a0b0;
+    --accent: #2dd4bf;
+    --accent-soft: #123b38;
+    --accent-text: #08201d;
+    --warn: #f5b454;
+    --warn-soft: #3a2a12;
+    --danger: #f97066;
+    --danger-soft: #3d1a17;
+    --ok: #4ade80;
+    --ok-soft: #12301f;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--border);
+  --color-ink: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-ink: var(--accent-text);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+
+  /* Type roles: serif display, plain sans body, mono for anything tabular. */
+  --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, ui-serif, serif;
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", "Segoe UI Mono", Menlo, Consolas, monospace;
+}
+
+html {
+  color-scheme: light dark;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+/* Tailwind v4: custom utilities (usable in markup and in @apply). */
+@utility card {
+  @apply rounded-xl border border-line bg-surface;
+}
+@utility input {
+  @apply w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink outline-none placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-accent/20;
+}
+@utility label {
+  @apply mb-1 block text-xs font-semibold uppercase tracking-wider text-muted;
+}
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50;
+}
+@utility btn-primary {
+  @apply btn bg-accent text-accent-ink hover:opacity-90;
+}
+@utility btn-ghost {
+  @apply btn border border-line bg-surface text-ink hover:bg-surface-2;
+}
+@utility btn-danger {
+  @apply btn border border-danger/40 bg-danger-soft text-danger hover:opacity-90;
+}
+@utility eyebrow {
+  @apply text-[11px] font-semibold uppercase tracking-[0.12em] text-muted;
+}
+@utility num {
+  @apply font-mono tabular-nums;
+}

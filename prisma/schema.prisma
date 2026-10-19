@@ -1,0 +1,273 @@
+// Tidewell — Prisma schema. See docs/ARCHITECTURE.md for how the pieces fit.
+//
+// Two kinds of data live here:
+//   * Systems of record you own: users, connections, finance (transactions,
+//     recurring items, categories). Never truncated.
+//   * Caches rebuilt by the sync job: calendar events, mail snapshot, GitHub
+//     items. Safe to wipe — the next sync rebuilds them.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Accounts
+// ---------------------------------------------------------------------------
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         Role     @default(USER)
+  timezone     String   @default("Europe/Paris")
+  locale       String   @default("en-GB")
+  currency     String   @default("EUR")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  connections     Connection[]
+  calendarSources CalendarSource[]
+  calendarEvents  CalendarEvent[]
+  mailMessages    MailMessage[]
+  githubItems     GithubItem[]
+  syncLogs        SyncLog[]
+  categories      Category[]
+  transactions    Transaction[]
+  recurrings      Recurring[]
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+// ---------------------------------------------------------------------------
+// Integrations — one row per connected external account. A user can connect
+// several accounts of the same provider (e.g. two Gmail addresses).
+// ---------------------------------------------------------------------------
+
+model Connection {
+  id              String           @id @default(cuid())
+  userId          String
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider        Provider
+  externalId      String // provider-side account id
+  label           String // email address or GitHub login shown in the UI
+  accessToken     String // AES-256-GCM encrypted (see src/lib/crypto.ts)
+  refreshToken    String? // encrypted
+  expiresAt       DateTime?
+  scopes          String           @default("")
+  status          ConnectionStatus @default(ACTIVE)
+  lastSyncAt      DateTime?
+  lastError       String?
+  mailUnreadCount Int? // inbox unread total from the last sync
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  calendarSources CalendarSource[]
+  mailMessages    MailMessage[]
+  githubItems     GithubItem[]
+  syncLogs        SyncLog[]
+
+  @@unique([userId, provider, externalId])
+  @@index([status, lastSyncAt])
+}
+
+enum Provider {
+  MICROSOFT
+  GOOGLE
+  GITHUB
+}
+
+enum ConnectionStatus {
+  ACTIVE
+  NEEDS_REAUTH
+  ERROR
+}
+
+// ---------------------------------------------------------------------------
+// Calendar (cache)
+// ---------------------------------------------------------------------------
+
+model CalendarSource {
+  id           String     @id @default(cuid())
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  connectionId String
+  connection   Connection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  externalId   String
+  name         String
+  color        String? // hex from the provider, if any
+  muted        Boolean    @default(false) // user preference — survives syncs
+
+  events CalendarEvent[]
+
+  @@unique([connectionId, externalId])
+}
+
+model CalendarEvent {
+  id             String         @id @default(cuid())
+  userId         String
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sourceId       String
+  source         CalendarSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  externalId     String
+  title          String
+  location       String?
+  startAt        DateTime
+  endAt          DateTime
+  isAllDay       Boolean        @default(false)
+  url            String?
+  responseStatus String? // accepted / tentative / declined / needsAction / organizer
+
+  @@index([userId, startAt])
+}
+
+// ---------------------------------------------------------------------------
+// Inbox snapshot (cache) — latest unread messages per mail account.
+// ---------------------------------------------------------------------------
+
+model MailMessage {
+  id           String     @id @default(cuid())
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  connectionId String
+  connection   Connection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  externalId   String
+  fromName     String?
+  fromAddress  String?
+  subject      String
+  snippet      String?
+  receivedAt   DateTime
+  isFlagged    Boolean    @default(false)
+  url          String?
+
+  @@index([userId, receivedAt])
+}
+
+// ---------------------------------------------------------------------------
+// GitHub triage (cache)
+// ---------------------------------------------------------------------------
+
+model GithubItem {
+  id           String     @id @default(cuid())
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  connectionId String
+  connection   Connection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  kind         GithubKind
+  repo         String // owner/name
+  number       Int
+  title        String
+  url          String
+  author       String?
+  isDraft      Boolean    @default(false)
+  updatedAt    DateTime
+
+  @@index([userId, kind])
+}
+
+enum GithubKind {
+  ISSUE_ASSIGNED
+  PR_REVIEW_REQUESTED
+  PR_AUTHORED
+}
+
+// ---------------------------------------------------------------------------
+// Sync log — one row per attempt so a quiet failure is never invisible.
+// ---------------------------------------------------------------------------
+
+model SyncLog {
+  id           String      @id @default(cuid())
+  userId       String
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  connectionId String?
+  connection   Connection? @relation(fields: [connectionId], references: [id], onDelete: SetNull)
+  provider     Provider
+  ok           Boolean
+  message      String?
+  durationMs   Int
+  ranAt        DateTime    @default(now())
+
+  @@index([userId, ranAt])
+}
+
+// ---------------------------------------------------------------------------
+// Money — system of record. Amounts are integer cents, always positive;
+// `type` decides the sign.
+// ---------------------------------------------------------------------------
+
+model Category {
+  id     String   @id @default(cuid())
+  userId String
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name   String
+  type   FlowType
+  color  String   @default("#64748b")
+
+  transactions Transaction[]
+  recurrings   Recurring[]
+
+  @@unique([userId, name, type])
+}
+
+enum FlowType {
+  INCOME
+  EXPENSE
+}
+
+model Transaction {
+  id          String     @id @default(cuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        FlowType
+  amountCents Int
+  date        DateTime   @db.Date
+  description String
+  note        String?
+  categoryId  String?
+  category    Category?  @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  recurringId String?
+  recurring   Recurring? @relation(fields: [recurringId], references: [id], onDelete: SetNull)
+  importHash  String? // set by CSV import so re-importing the same file never duplicates
+  createdAt   DateTime   @default(now())
+
+  @@unique([userId, importHash])
+  @@index([userId, date])
+}
+
+// A bill, subscription, salary… anything that repeats. `nextDate` is the next
+// occurrence that hasn't been marked paid/received or skipped yet.
+model Recurring {
+  id          String     @id @default(cuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        FlowType
+  name        String
+  amountCents Int
+  frequency   Frequency
+  interval    Int        @default(1) // every N units
+  anchorDay   Int // original day-of-month, so 31st → 28/29/30 → back to 31st
+  nextDate    DateTime   @db.Date
+  endDate     DateTime?  @db.Date
+  active      Boolean    @default(true)
+  categoryId  String?
+  category    Category?  @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  createdAt   DateTime   @default(now())
+
+  transactions Transaction[]
+
+  @@index([userId, active, nextDate])
+}
+
+enum Frequency {
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
