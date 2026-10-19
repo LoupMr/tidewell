@@ -44,10 +44,12 @@ Copy `Tidewell/deploy/tidewell.env.example` to **`SC-Nexus/tidewell.env`** and r
 
 ## Step 3 — Build & start (from the SC-Nexus folder)
 
+Synology ships the standalone `docker-compose` (with a hyphen), and Docker needs `sudo`.
+
 ```bash
 cd /volume2/web/SC-Nexus
-docker compose up -d --build tidewell-db tidewell
-docker compose logs -f tidewell     # "→ Applying database migrations…" then "[sync] scheduler started"
+sudo docker-compose up -d --build tidewell-db tidewell
+sudo docker-compose logs -f tidewell     # "→ Applying database migrations…" then "[sync] scheduler started"
 ```
 
 Or use **Container Manager → Project → sc-nexus → Build** and start the two new containers.
@@ -62,7 +64,7 @@ No host `chown` is needed: the database uses a named volume, and the app keeps n
    - Service type: `HTTP` · URL: `tidewell:3000`
 3. Save. Cloudflare creates the DNS record.
 
-Open **https://tidewell.lothmar.com** and create your account. **The first account becomes admin.** Always use
+Open **https://tidewell.lothmar.com** and create your account. Every account is independent: there's no admin, and nobody can see anyone else's data. Always use
 the https URL: the session cookie is `Secure` and won't stick over `http://<nas-ip>:3003`.
 
 ## Step 5 — Decide who can sign up
@@ -73,7 +75,7 @@ the https URL: the session cookie is `Secure` and won't stick over `http://<nas-
 - `invite`: only emails in `REGISTRATION_ALLOWLIST=a@x.com,b@y.com`.
 - `closed`: no new accounts.
 
-Apply changes with `docker compose up -d tidewell`.
+Apply changes with `sudo docker-compose up -d tidewell`.
 
 ---
 
@@ -81,7 +83,7 @@ Apply changes with `docker compose up -d tidewell`.
 
 ```bash
 cd /volume2/web/Tidewell && git pull
-cd ../SC-Nexus && docker compose up -d --build tidewell    # DB untouched; new migrations apply on start
+cd ../SC-Nexus && sudo docker-compose up -d --build tidewell    # DB untouched; new migrations apply on start
 ```
 
 ## Backups

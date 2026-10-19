@@ -58,7 +58,7 @@ export default async function SettingsPage({
       {sp.error && (
         <div className="card mb-6 border-danger/40 bg-danger-soft px-4 py-3 text-sm text-danger">
           {sp.error === "provider_not_configured"
-            ? "That provider isn't configured on this instance yet — the admin needs to add its OAuth keys (see docs/INTEGRATIONS.md)."
+            ? "That provider isn't configured on this instance yet — whoever runs this server needs to add its OAuth keys (see docs/INTEGRATIONS.md)."
             : `Couldn't connect: ${sp.error}`}
         </div>
       )}

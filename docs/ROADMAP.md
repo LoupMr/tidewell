@@ -17,7 +17,7 @@ properly: the gates are real.
 ## Phase 3 — GitHub & polish ✅ (v0.1) → hardening
 - GitHub triage lists.
 - [ ] Email verification + password reset over SMTP (Brevo, same as Studio).
-- [ ] Admin page: list users, disable an account, view sync health per instance.
+- [ ] Per-user sync health in Settings (failures in the last 24 h, per connection).
 - [ ] Tests: unit tests for `recurrence.ts`, `format.ts` amount parsing, CSV mapping; a sync test with
       recorded API fixtures.
 - **Gate:** a second person has used the instance for a week without help.

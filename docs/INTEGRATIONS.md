@@ -13,7 +13,10 @@ For the reference deployment that's `https://tidewell.lothmar.com/api/connect/mi
 likewise for `google` and `github`. For local dev add `http://localhost:3020/api/connect/<provider>/callback`
 too, or create separate dev apps.
 
-After editing the env file, restart the container: `docker compose up -d tidewell`.
+After editing the env file, recreate the container so it picks up the new values:
+
+- **Synology NAS** (standalone Compose, from the `SC-Nexus` folder): `sudo docker-compose up -d tidewell`
+- **Docker with the Compose plugin** (standalone `docker-compose.yml` in this repo): `docker compose up -d app`
 
 ---
 

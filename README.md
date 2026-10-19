@@ -54,7 +54,7 @@ npm run db:migrate              # apply migrations
 npm run dev                     # http://localhost:3020
 ```
 
-Create an account at `/register`. The first account becomes the instance admin. Calendars, mail and GitHub
+Create an account at `/register`. Every account is independent: there's no admin role, and nobody can see anyone else's data. Calendars, mail and GitHub
 need OAuth apps: follow [docs/INTEGRATIONS.md](docs/INTEGRATIONS.md) (about 10 minutes per provider). The
 Money section works right away without any of them.
 
